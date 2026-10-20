@@ -7,22 +7,23 @@ app = Flask(__name__)
 
 # بيانات تجريبية فقط، وليست متبرعين حقيقيين
 DONORS = [
-    {"name": "أحمد علي", "blood_type": "O-", "city": "جازان"},
-    {"name": "خالد عمر", "blood_type": "O+", "city": "جازان"},
-    {"name": "سارة محمد", "blood_type": "A-", "city": "صبيا"},
-    {"name": "فهد عبدالله", "blood_type": "A+", "city": "جازان"},
-    {"name": "نورة أحمد", "blood_type": "B-", "city": "أبو عريش"},
-    {"name": "محمد حسن", "blood_type": "B+", "city": "صبيا"},
-    {"name": "ريم علي", "blood_type": "AB-", "city": "جازان"},
-    {"name": "عبدالله سالم", "blood_type": "AB+", "city": "أبو عريش"},
-    {"name": "سلمان يحيى", "blood_type": "O-", "city": "صبيا"},
-    {"name": "منى حسن", "blood_type": "O+", "city": "أبو عريش"},
-    {"name": "تركي أحمد", "blood_type": "A-", "city": "جازان"},
-    {"name": "جود محمد", "blood_type": "A+", "city": "صبيا"},
-    {"name": "فيصل علي", "blood_type": "B-", "city": "جازان"},
-    {"name": "لمى خالد", "blood_type": "B+", "city": "أبو عريش"},
-    {"name": "راكان سالم", "blood_type": "AB-", "city": "صبيا"},
-    {"name": "هيا عبدالله", "blood_type": "AB+", "city": "جازان"},
+
+    {"name": "سعود محمد", "blood_type": "O+", "city": "الرياض"},
+    {"name": "نواف علي", "blood_type": "A+", "city": "جدة"},
+    {"name": "ريم أحمد", "blood_type": "B+", "city": "مكة المكرمة"},
+    {"name": "فيصل خالد", "blood_type": "AB+", "city": "المدينة المنورة"},
+    {"name": "لولوة حسن", "blood_type": "O-", "city": "الدمام"},
+    {"name": "تركي سالم", "blood_type": "A-", "city": "الخبر"},
+    {"name": "جود عبدالله", "blood_type": "B-", "city": "أبها"},
+    {"name": "راكان فهد", "blood_type": "AB-", "city": "نجران"},
+    {"name": "منى يحيى", "blood_type": "O+", "city": "تبوك"},
+    {"name": "عبدالعزيز حسن", "blood_type": "A+", "city": "حائل"},
+    {"name": "هند محمد", "blood_type": "B+", "city": "بريدة"},
+    {"name": "ماجد علي", "blood_type": "AB+", "city": "عرعر"},
+    {"name": "ليان خالد", "blood_type": "O-", "city": "سكاكا"},
+    {"name": "بدر أحمد", "blood_type": "A-", "city": "الباحة"},
+    {"name": "شهد سالم", "blood_type": "B-", "city": "صبيا"},
+    {"name": "فهد يحيى", "blood_type": "AB-", "city": "جازان"},
 ]
 
 
