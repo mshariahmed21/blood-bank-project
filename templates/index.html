@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قطرة حياة | منصة التبرع بالدم</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="brand">🩸 قطرة حياة</div>
+    <span class="top-label">منصة التبرع بالدم والربط اللحظي</span>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div class="hero-text">
+            <span class="eyebrow">معًا نصنع فرقًا</span>
+            <h1>قطرة منك،<br><span>حياة لغيرك.</span></h1>
+            <p>منصة تجريبية تساعد على البحث عن متبرعين بالدم حسب الفصيلة والمدينة.</p>
+            <a href="#search" class="primary-link">ابحث عن متبرع ←</a>
+        </div>
+        <div class="hero-art">
+            <div class="drop">♥</div>
+            <div class="floating-card">🩸 كل تبرع يصنع أملًا</div>
+        </div>
+    </section>
+
+    <section class="search-section" id="search">
+        <div class="section-heading">
+            <span class="eyebrow">البحث الذكي</span>
+            <h2>ابحث عن متبرع مناسب</h2>
+            <p>اختر الفصيلة والمدينة لعرض النتائج التجريبية.</p>
+        </div>
+
+        <form method="POST" class="search-form">
+            <div class="field">
+                <label for="blood_type">فصيلة الدم</label>
+                <select name="blood_type" id="blood_type">
+                    <option value="">كل الفصائل</option>
+                    {% for bt in ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"] %}
+                    <option value="{{ bt }}" {% if selected_type == bt %}selected{% endif %}>{{ bt }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="city">المدينة</label>
+                <select name="city" id="city">
+                    <option value="">كل المدن</option>
+                    {% for c in ["جازان", "صبيا", "أبو عريش"] %}
+                    <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="search-button">🔎 بحث عن متبرعين</button>
+        </form>
+
+        {% if searched %}
+        <div class="results">
+            <h3>نتائج البحث: {{ results|length }}</h3>
+            {% if results %}
+            <div class="donor-grid">
+                {% for donor in results %}
+                <article class="donor-card">
+                    <div class="donor-avatar">♥</div>
+                    <div class="donor-info">
+                        <h4>{{ donor.name }}</h4>
+                        <p>📍 {{ donor.city }}</p>
+                    </div>
+                    <span class="blood-badge">{{ donor.blood_type }}</span>
+                    <p class="demo-note">بيانات تجريبية فقط</p>
+                </article>
+                {% endfor %}
+            </div>
+            <p class="demo-warning">هذه بيانات وهمية للعرض التعليمي وليست متبرعين حقيقيين.</p>
+            {% else %}
+            <p class="empty-state">لا توجد نتائج مطابقة. جرّب تغيير الفصيلة أو المدينة.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+</main>
+
+<footer>
+    <div class="footer-brand">🩸 قطرة حياة</div>
+    <p class="quote">«قطرة دم واحدة قد تنقذ حياة.. عطاؤك أمل للآخرين»</p>
+    <p class="author">إعداد المتدرب: مشاري احمد مخرش | الكلية التقنية بجازان</p>
+    <small>مشروع تعليمي تجريبي — لا يمثل خدمة طبية فعلية.</small>
+</footer>
+
+</body>
+</html>
