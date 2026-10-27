@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل متبرع | قطرة حياة</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand brand-link" href="{{ url_for('index') }}">🩸 قطرة حياة</a>
+    <div class="header-tools"><button class="theme-toggle" type="button" data-theme-toggle>🌙 الوضع الداكن</button><a class="text-link" href="{{ url_for('login') }}">تسجيل الدخول</a><a class="text-link" href="{{ url_for('index') }}">العودة للرئيسية ←</a></div>
+</header>
+<main class="container form-container">
+    <section class="registration-panel">
+        <span class="eyebrow">كن سببًا في الأمل</span>
+        <h1>التسجيل كمتبرع</h1>
+        <p class="form-intro">أكمل بياناتك لتظهر في نتائج البحث. تسجيل الدخول والتحقق يتمان عبر البريد الإلكتروني، ورقم الجوال يُستخدم للتواصل بشأن التبرع فقط.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <div class="flash-list" aria-live="polite">
+            {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="registration-form">
+            <div class="field">
+                <label for="full_name">الاسم الكامل</label>
+                <input id="full_name" name="full_name" type="text" minlength="2" maxlength="100" autocomplete="name" required value="{{ form.get('full_name', '') }}">
+            </div>
+            <div class="field">
+                <label>البريد الإلكتروني الموثّق</label>
+                <input type="email" value="{{ verified_email }}" readonly aria-readonly="true">
+                <small>تم التحقق من بريدك الإلكتروني، وهو وسيلة تسجيل الدخول.</small>
+            </div>
+            <div class="field">
+                <label for="phone">رقم الجوال للتواصل</label>
+                <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xxxxxxxx" required value="{{ form.get('phone', '') }}">
+                <small>لن يُستخدم رقم الجوال لتسجيل الدخول. يظهر خيار واتساب للآخرين فقط إذا وافقت أدناه.</small>
+            </div>
+            <div class="field">
+                <label for="age">العمر</label>
+                <input id="age" name="age" type="number" min="18" max="100" required value="{{ form.get('age', '') }}">
+                <small>يشترط أن يكون عمرك 18 عامًا فأكثر، وتحدد الجهة الصحية الأهلية النهائية للتبرع.</small>
+            </div>
+            <div class="field">
+                <label for="blood_type">فصيلة الدم</label>
+                <select id="blood_type" name="blood_type" required>
+                    <option value="">اختر فصيلة الدم</option>
+                    {% for bt in blood_types %}
+                    <option value="{{ bt }}" {% if form.get('blood_type') == bt %}selected{% endif %}>{{ bt }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="city">المدينة</label>
+                <select id="city" name="city" required>
+                    <option value="">اختر المدينة</option>
+                    {% for c in cities %}
+                    <option value="{{ c }}" {% if form.get('city') == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="honeypot" aria-hidden="true">
+                <label for="website">اترك هذا الحقل فارغًا</label>
+                <input id="website" name="website" tabindex="-1" autocomplete="off">
+            </div>
+            <label class="consent-row">
+                <input type="checkbox" name="consent" value="yes" required {% if form.get('consent') == 'yes' %}checked{% endif %}>
+                <span>أوافق على حفظ بياناتي وعرض اسمي الأول والحرف الأول من اسم العائلة والمدينة وفصيلة الدم في نتائج البحث.</span>
+            </label>
+            <label class="consent-row phone-consent">
+                <input type="checkbox" name="public_phone" value="yes" {% if form.get('public_phone') == 'yes' %}checked{% endif %}>
+                <span>أوافق بشكل اختياري على إظهار رقم جوالي للباحثين عن متبرع ليتواصلوا معي مباشرة.</span>
+            </label>
+            <p class="privacy-hint">بالتسجيل، يمكنك طلب تصحيح بياناتك أو حذفها من مسؤول المنصة. اقرأ <a href="{{ url_for('privacy') }}">سياسة الخصوصية</a>.</p>
+            <button type="submit" class="search-button submit-button">تأكيد التسجيل</button>
+        </form>
+    </section>
+</main>
+<footer>
+    <div class="footer-brand">🩸 قطرة حياة</div>
+    <div class="author-block">
+        <p class="author-title">إعداد المتدربين</p>
+        <ul class="trainee-list">
+            <li>مشاري مخرش</li>
+            <li>عبدالعزيز قماش</li>
+            <li>محمد رفاعي</li>
+            <li>علي النجعي</li>
+        </ul>
+        <p class="author-school">الكلية التقنية بجازان</p>
+    </div>
+    <small>يجب تنسيق التبرع وإجراءاته مع جهة صحية معتمدة.</small>
+</footer>
+<script src="{{ url_for('static', filename='theme.js') }}"></script></body>
+</html>
