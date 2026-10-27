@@ -10,7 +10,7 @@ import urllib.parse
 import urllib.request
 from email.message import EmailMessage
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, render_template_string, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 
@@ -355,6 +355,127 @@ def register():
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
+
+
+# Private admin panel: configure ADMIN_PASSWORD in the hosting environment.
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
+
+ADMIN_TEMPLATE = """
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إدارة قطرة حياة</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f5fb;color:#20243a;margin:0;padding:24px}
+main{max-width:1000px;margin:auto;background:white;padding:24px;border-radius:16px;box-shadow:0 8px 28px #18204a12}
+h1{color:#5541a8} input,button{padding:10px;border-radius:8px;border:1px solid #ccc}
+button{cursor:pointer;background:#5946b2;color:white;border:0} .danger{background:#b42332}
+table{width:100%;border-collapse:collapse;margin-top:18px}th,td{padding:10px;border-bottom:1px solid #eee;text-align:right}
+.msg{padding:10px;background:#fce8e8;border-radius:8px;margin:8px 0}.muted{color:#666}
+</style></head><body><main>
+<h1>لوحة إدارة قطرة حياة</h1>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}<div class="msg">{{ message }}</div>{% endfor %}
+{% endwith %}
+{% if not admin_logged_in %}
+<p>الدخول مخصص لمسؤول المنصة.</p>
+<form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>كلمة المرور <input type="password" name="password" required autocomplete="current-password"></label>
+<button type="submit" name="action" value="login">دخول</button>
+</form>
+{% else %}
+<p>تم تسجيل الدخول كمسؤول. إجمالي المتبرعين: <strong>{{ donors|length }}</strong></p>
+<form method="post" action="{{ url_for('admin_panel') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<button type="submit" name="action" value="logout">تسجيل الخروج</button>
+</form>
+<table><thead><tr><th>الاسم</th><th>الجوال</th><th>الفصيلة</th><th>المدينة</th><th>العمر</th><th>الإجراء</th></tr></thead><tbody>
+{% for donor in donors %}
+<tr><td>{{ donor.full_name }}</td><td>{{ donor.phone }}</td><td>{{ donor.blood_type }}</td><td>{{ donor.city }}</td><td>{{ donor.age }}</td><td>
+<form method="post" action="{{ url_for('admin_panel') }}" onsubmit="return confirm('تأكيد حذف بيانات المتبرع {{ donor.full_name }}؟');">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="donor_id" value="{{ donor.id }}">
+<button class="danger" type="submit" name="action" value="delete">حذف المتبرع</button>
+</form></td></tr>
+{% else %}<tr><td colspan="6">لا يوجد متبرعون مسجلون.</td></tr>{% endfor %}
+</tbody></table>
+<p class="muted">حذف المتبرع يحذف أيضًا الرسائل والمحادثات المرتبطة به.</p>
+{% endif %}
+</main></body></html>
+"""
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin_panel():
+    if "admin_csrf" not in session:
+        session["admin_csrf"] = secrets.token_urlsafe(32)
+
+    if request.method == "POST":
+        submitted_token = request.form.get("csrf_token", "")
+        if not secrets.compare_digest(submitted_token, session.get("admin_csrf", "")):
+            flash("انتهت صلاحية الطلب. حدّث الصفحة وحاول مرة أخرى.", "error")
+            return redirect(url_for("admin_panel"))
+
+        action = request.form.get("action", "")
+        if action == "login":
+            if not ADMIN_PASSWORD:
+                flash("لوحة الإدارة غير مفعلة. أضف ADMIN_PASSWORD في إعدادات البيئة.", "error")
+            elif secrets.compare_digest(request.form.get("password", ""), ADMIN_PASSWORD):
+                session.clear()
+                session["is_admin"] = True
+                session["admin_csrf"] = secrets.token_urlsafe(32)
+                session.permanent = True
+                flash("تم تسجيل الدخول بنجاح.", "success")
+            else:
+                time.sleep(1)
+                flash("كلمة المرور غير صحيحة.", "error")
+            return redirect(url_for("admin_panel"))
+
+        if not session.get("is_admin"):
+            flash("سجّل الدخول أولًا.", "error")
+            return redirect(url_for("admin_panel"))
+
+        if action == "logout":
+            session.clear()
+            return redirect(url_for("admin_panel"))
+
+        if action == "delete":
+            donor_id = request.form.get("donor_id", type=int)
+            donor = db.session.get(Donor, donor_id) if donor_id else None
+            if not donor:
+                flash("المتبرع غير موجود.", "error")
+                return redirect(url_for("admin_panel"))
+
+            conversation_ids = [
+                row[0] for row in db.session.query(Conversation.id).filter(
+                    db.or_(Conversation.donor_a_id == donor.id,
+                           Conversation.donor_b_id == donor.id)
+                ).all()
+            ]
+            try:
+                if conversation_ids:
+                    Message.query.filter(Message.conversation_id.in_(conversation_ids)).delete(synchronize_session=False)
+                    Conversation.query.filter(Conversation.id.in_(conversation_ids)).delete(synchronize_session=False)
+                # Also remove any messages sent by this donor in case of inconsistent legacy data.
+                Message.query.filter_by(sender_id=donor.id).delete(synchronize_session=False)
+                db.session.delete(donor)
+                db.session.commit()
+                flash("تم حذف بيانات المتبرع والمحادثات المرتبطة به.", "success")
+            except Exception:
+                db.session.rollback()
+                app.logger.exception("Admin donor deletion failed")
+                flash("تعذر حذف المتبرع. راجع سجل التطبيق.", "error")
+            return redirect(url_for("admin_panel"))
+
+    logged_in = bool(session.get("is_admin"))
+    donors = Donor.query.order_by(Donor.created_at.desc()).all() if logged_in else []
+    return render_template_string(
+        ADMIN_TEMPLATE,
+        admin_logged_in=logged_in,
+        donors=donors,
+        csrf_token=session["admin_csrf"],
+    )
 
 
 if __name__ == "__main__":
