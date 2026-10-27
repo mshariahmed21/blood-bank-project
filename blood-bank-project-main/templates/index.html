@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="قطرة حياة منصة تعليمية للتسجيل الاختياري للمتبرعين والبحث حسب فصيلة الدم والمدينة.">
+    <title>قطرة حياة | منصة التبرع بالدم</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand brand-link" href="{{ url_for('index') }}">🩸 قطرة حياة</a>
+    <nav class="top-actions" aria-label="التنقل الرئيسي">
+        <button class="theme-toggle" type="button" data-theme-toggle>🌙 الوضع الداكن</button>
+        <a href="#search">البحث عن متبرع</a>
+        <a href="{{ url_for('inbox') }}">رسائلي الخاصة</a>
+        <a class="nav-register" href="{{ url_for('register') }}">+ إضافة بياناتي</a>
+    </nav>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div class="hero-text">
+            <span class="eyebrow">معًا نصنع فرقًا</span>
+            <h1>قطرة منك،<br><span>حياة لغيرك.</span></h1>
+            <p>سجّل رغبتك في التبرع، أو ابحث عن متبرعين مسجلين حسب فصيلة الدم والمدينة.</p>
+            <div class="hero-actions">
+                <a href="#search" class="primary-link">ابحث عن متبرع ←</a>
+                <a href="{{ url_for('register') }}" class="secondary-link">+ إضافة بياناتي كمتبرع</a>
+            </div>
+            <p class="privacy-inline">🔒 رقم الجوال لا يظهر في نتائج البحث العامة.</p>
+        </div>
+        <div class="hero-art">
+            <div class="drop">♥</div>
+            <div class="floating-card">🩸 كل تبرع يصنع أملًا</div>
+        </div>
+    </section>
+
+    <section class="stats" aria-label="إحصائيات المنصة">
+        <article class="stat-card"><span>🩸</span><div><strong>{{ total_donors }}</strong><small>متبرع مسجّل</small></div></article>
+        <article class="stat-card"><span>🔎</span><div><strong>8</strong><small>فصائل دم</small></div></article>
+        <article class="stat-card"><span>📍</span><div><strong>{{ cities|length }}</strong><small>مدينة متاحة بالقائمة</small></div></article>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-list" aria-live="polite">
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="search-section" id="search">
+        <div class="section-heading">
+            <span class="eyebrow">البحث الذكي</span>
+            <h2>ابحث عن متبرع مناسب</h2>
+            <p>النتائج تعرض بيانات المتبرعين الذين سجّلوا موافقتهم على الظهور في المنصة.</p>
+        </div>
+        <form method="POST" action="{{ url_for('explore') }}" class="search-form">
+            <div class="field">
+                <label for="blood_type">فصيلة الدم</label>
+                <select name="blood_type" id="blood_type">
+                    <option value="">كل الفصائل</option>
+                    {% for bt in blood_types %}
+                    <option value="{{ bt }}" {% if selected_type == bt %}selected{% endif %}>{{ bt }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="city">المدينة</label>
+                <select name="city" id="city">
+                    <option value="">كل المدن</option>
+                    {% for c in cities %}
+                    <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="search-button">🔎 بحث عن متبرعين</button>
+        </form>
+
+        {% if searched %}
+        <div class="results">
+            <h3>نتائج البحث: <span class="result-count">{{ results|length }}</span></h3>
+            {% if results %}
+            <div class="donor-grid">
+                {% for donor in results %}
+                <article class="donor-card">
+                    <div class="donor-avatar">♥</div>
+                    <div class="donor-info">
+                        <h4>{{ donor.full_name.split()[0] }} {{ donor.full_name.split()[-1][0] }}.</h4>
+                        <p>📍 {{ donor.city }}</p>
+                    </div>
+                    <span class="blood-badge">{{ donor.blood_type }}</span>
+                    <p class="demo-note">متبرع مسجّل · الجوال مخفي للخصوصية</p>
+                    <div class="donor-actions">
+                        <a class="search-button donor-action" href="{{ url_for('start_message', donor_id=donor.id) }}">محادثة خاصة</a>
+                        {% if donor.public_phone %}
+                        <a class="secondary-link donor-action" href="https://wa.me/{{ donor.phone }}" target="_blank" rel="noopener noreferrer">واتساب</a>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            <p class="demo-warning">يجب التحقق من أهلية التبرع وتنسيق التبرع عبر جهة صحية معتمدة.</p>
+            {% else %}
+            <p class="empty-state">لا توجد تسجيلات مطابقة حاليًا. جرّب تغيير الفصيلة أو المدينة، أو شارك رابط المنصة مع من يرغب بالتسجيل.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="steps">
+        <div class="section-heading">
+            <span class="eyebrow">كيف تعمل المنصة؟</span>
+            <h2>ثلاث خطوات بسيطة</h2>
+        </div>
+        <div class="step-grid">
+            <article class="step"><span>01</span><h3>سجّل بياناتك</h3><p>أدخل معلوماتك الأساسية ووافق على سياسة الخصوصية.</p></article>
+            <article class="step"><span>02</span><h3>ابحث بسهولة</h3><p>اختر فصيلة الدم والمدينة للوصول إلى النتائج المناسبة.</p></article>
+            <article class="step"><span>03</span><h3>نسّق عبر جهة موثوقة</h3><p>تحقق من الاحتياج وأهلية التبرع مع بنك دم أو جهة صحية معتمدة.</p></article>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-brand">🩸 قطرة حياة</div>
+    <p class="quote">«قطرة دم واحدة قد تنقذ حياة.. عطاؤك أمل للآخرين»</p>
+    <div class="author-block">
+        <p class="author-title">إعداد المتدربين</p>
+        <ul class="trainee-list">
+            <li>مشاري مخرش</li>
+            <li>عبدالعزيز قماش</li>
+            <li>محمد رفاعي</li>
+            <li>علي النجعي</li>
+        </ul>
+        <p class="author-school">الكلية التقنية بجازان</p>
+    </div>
+    <p><a href="{{ url_for('privacy') }}">سياسة الخصوصية</a></p>
+    <small>تُستكمل إجراءات التبرع عبر جهة صحية معتمدة.</small>
+</footer>
+<script src="{{ url_for('static', filename='theme.js') }}"></script></body>
+</html>
