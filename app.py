@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 from email.message import EmailMessage
 
-from flask import Flask, flash, redirect, render_template, render_template_string, request, session, url_for
+from flask import Flask, flash, redirect, render_template, render_template_string, request, session, url_for, send_from_directory, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 
@@ -324,6 +324,19 @@ def conversation(conversation_id):
     if other and other.public_phone and other.phone:
         whatsapp_link = "https://wa.me/" + re.sub(r"\D", "", other.phone)
     return render_template("conversation.html", donor=donor, other=other, conversation=convo, messages=messages, whatsapp_link=whatsapp_link)
+
+
+@app.route("/manifest.webmanifest")
+def pwa_manifest():
+    return send_from_directory(app.root_path, "manifest.webmanifest", mimetype="application/manifest+json")
+
+
+@app.route("/service-worker.js")
+def pwa_service_worker():
+    response = make_response(send_from_directory(os.path.join(app.root_path, "static"), "service-worker.js", mimetype="application/javascript"))
+    response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
 
 
 @app.route("/", methods=["GET"])

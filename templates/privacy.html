@@ -6,7 +6,7 @@
     <title>سياسة الخصوصية | قطرة حياة</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
-</head>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#b91f3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="/static/icons/icon-192.png"></head>
 <body>
 <header class="topbar">
     <a class="brand brand-link" href="{{ url_for('explore') }}">🩸 قطرة حياة</a>
@@ -29,5 +29,5 @@
     </section>
 </main>
 <footer><div class="footer-brand">🩸 قطرة حياة</div><div class="author-block"><p class="author-title">إعداد المتدربين</p><ul class="trainee-list"><li>مشاري مخرش</li><li>عبدالعزيز قماش</li><li>محمد رفاعي</li><li>علي النجعي</li></ul><p class="author-school">الكلية التقنية بجازان</p></div><small>تُستكمل إجراءات التبرع عبر جهة صحية معتمدة.</small></footer>
-<script src="{{ url_for('static', filename='theme.js') }}"></script></body>
+<script src="{{ url_for('static', filename='theme.js') }}"></script><script src="{{ url_for('static', filename='pwa.js') }}" defer></script></body>
 </html>

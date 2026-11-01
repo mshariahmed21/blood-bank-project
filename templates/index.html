@@ -8,7 +8,7 @@
 <title>قطرة حياة | قطرة منك، حياة لغيرك</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-</head>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#b91f3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="/static/icons/icon-192.png"></head>
 <body>
 <div class="page-glow" aria-hidden="true"></div>
 <header class="topbar site-header">
@@ -87,4 +87,4 @@
 <footer><div class="footer-brand"><span class="brand-mark">♥</span> قطرة حياة</div><p class="quote">«قطرة دم واحدة قد تنقذ حياة.. عطاؤك أمل للآخرين»</p><div class="author-block"><p class="author-title">إعداد المتدربين</p><ul class="trainee-list"><li>مشاري مخرش</li><li>عبدالعزيز قماش</li><li>محمد رفاعي</li><li>علي النجعي</li></ul><p class="author-school">الكلية التقنية بجازان</p></div><p><a href="{{ url_for('privacy') }}">سياسة الخصوصية</a></p><small>تُستكمل إجراءات التبرع عبر جهة صحية معتمدة.</small></footer>
 <script src="{{ url_for('static', filename='theme.js') }}"></script><script src="{{ url_for('static', filename='menu.js') }}"></script>
 {% if searched %}<script>document.addEventListener('DOMContentLoaded',()=>document.getElementById('search')?.scrollIntoView({behavior:'smooth',block:'start'}));</script>{% endif %}
-<script src="{{ url_for('static', filename='notifications.js') }}"></script></body></html>
+<script src="{{ url_for('static', filename='notifications.js') }}"></script><script src="{{ url_for('static', filename='pwa.js') }}" defer></script></body></html>

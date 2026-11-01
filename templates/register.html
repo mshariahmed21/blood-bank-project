@@ -6,7 +6,7 @@
     <title>تسجيل متبرع | قطرة حياة</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-</head>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#b91f3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="/static/icons/icon-192.png"></head>
 <body>
 <header class="topbar">
     <a class="brand brand-link" href="{{ url_for('index') }}">🩸 قطرة حياة</a>
@@ -93,5 +93,5 @@
     </div>
     <small>يجب تنسيق التبرع وإجراءاته مع جهة صحية معتمدة.</small>
 </footer>
-<script src="{{ url_for('static', filename='theme.js') }}"></script></body>
+<script src="{{ url_for('static', filename='theme.js') }}"></script><script src="{{ url_for('static', filename='pwa.js') }}" defer></script></body>
 </html>

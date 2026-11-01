@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "قطرة حياة | منصة التبرع بالدم",
+  "short_name": "قطرة حياة",
+  "description": "منصة للتواصل مع المتبرعين بالدم حسب الفصيلة والمدينة مع مراعاة الخصوصية.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#10151f",
+  "theme_color": "#b91f3b",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/static/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
