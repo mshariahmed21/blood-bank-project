@@ -16,7 +16,7 @@
     <section class="registration-panel">
         <span class="eyebrow">كن سببًا في الأمل</span>
         <h1>إضافة بيانات المتبرع</h1>
-        <p class="form-intro">أدخل بياناتك مباشرة بدون تسجيل دخول أو رمز تحقق. بعد الحفظ تقدر تبحث عن متبرعين وتستخدم الرسائل الخاصة، وخيار واتساب يبقى متاحًا حسب موافقتك.</p>
+        <p class="form-intro">أكمل بياناتك كمتبرع. رقم الجوال اختياري تمامًا، ويمكنك إنشاء حساب لتسهيل تسجيل الدخول لاحقًا.</p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -34,8 +34,9 @@
                 <input id="full_name" name="full_name" type="text" minlength="2" maxlength="100" autocomplete="name" required value="{{ form.get('full_name', '') }}">
             </div>
             <div class="field">
-                <label for="phone">رقم الجوال للتواصل</label>
-                <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xxxxxxxx" required value="{{ form.get('phone', '') }}">
+                <label for="phone">رقم الجوال <span class="optional-label">(اختياري)</span></label>
+                <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="يمكنك تركه فارغًا" value="{{ form.get('phone', '') }}">
+                <small>رقمك يظهر عند موافقتك الصريحة فقط.</small>
                 <small>يُستخدم رقم الجوال للتواصل بشأن التبرع. يبقى خيار واتساب اختياريًا حسب موافقتك أدناه.</small>
             </div>
             <div class="field">
@@ -71,7 +72,7 @@
             </label>
             <label class="consent-row phone-consent">
                 <input type="checkbox" name="public_phone" value="yes" {% if form.get('public_phone') == 'yes' %}checked{% endif %}>
-                <span>أوافق بشكل اختياري على إظهار رقم جوالي للباحثين عن متبرع ليتواصلوا معي مباشرة.</span>
+                <span>أوافق بشكل اختياري على إظهار رقم جوالي عند موافقتي، ويمكنني تركه فارغًا.</span>
             </label>
             <p class="privacy-hint">بالتسجيل، يمكنك طلب تصحيح بياناتك أو حذفها من مسؤول المنصة. اقرأ <a href="{{ url_for('privacy') }}">سياسة الخصوصية</a>.</p>
             <button type="submit" class="search-button submit-button">حفظ بياناتي</button>

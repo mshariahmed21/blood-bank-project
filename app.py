@@ -4,6 +4,7 @@ import secrets
 import time
 import json
 import hashlib
+from werkzeug.security import generate_password_hash, check_password_hash
 import smtplib
 import ssl
 import urllib.parse
@@ -57,12 +58,20 @@ class Donor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(254), nullable=True, unique=True, index=True)
-    phone = db.Column(db.String(20), nullable=False, unique=True, index=True)
+    phone = db.Column(db.String(20), nullable=True, unique=True, index=True)
     age = db.Column(db.Integer, nullable=False)
     blood_type = db.Column(db.String(3), nullable=False, index=True)
     city = db.Column(db.String(80), nullable=False, index=True)
     consent = db.Column(db.Boolean, nullable=False, default=False)
     public_phone = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(db.DateTime, nullable=False, server_default=func.now())
+
+
+class Account(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(254), nullable=False, unique=True, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    donor_id = db.Column(db.Integer, db.ForeignKey("donor.id"), nullable=True, unique=True)
     created_at = db.Column(db.DateTime, nullable=False, server_default=func.now())
 
 
@@ -82,6 +91,28 @@ class Message(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, server_default=func.now(), index=True)
 
 
+class UserPreference(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    donor_id = db.Column(db.Integer, db.ForeignKey("donor.id"), nullable=False, unique=True, index=True)
+    in_site_notifications = db.Column(db.Boolean, nullable=False, default=True)
+    browser_notifications = db.Column(db.Boolean, nullable=False, default=False)
+    email_notifications = db.Column(db.Boolean, nullable=False, default=False)
+    show_in_directory = db.Column(db.Boolean, nullable=False, default=True)
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=func.now())
+
+
+class DonationRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    donor_id = db.Column(db.Integer, db.ForeignKey("donor.id"), nullable=False, index=True)
+    blood_type = db.Column(db.String(3), nullable=False, index=True)
+    city = db.Column(db.String(80), nullable=False, index=True)
+    hospital = db.Column(db.String(160), nullable=False)
+    urgency = db.Column(db.String(20), nullable=False, default="عادي")
+    details = db.Column(db.String(1000), nullable=True)
+    status = db.Column(db.String(20), nullable=False, default="مفتوح", index=True)
+    created_at = db.Column(db.DateTime, nullable=False, server_default=func.now(), index=True)
+
+
 with app.app_context():
     db.create_all()
     # Small forward-compatible SQLite migration for databases created by earlier versions.
@@ -92,6 +123,10 @@ with app.app_context():
                 connection.exec_driver_sql("ALTER TABLE donor ADD COLUMN public_phone BOOLEAN NOT NULL DEFAULT 0")
             if "email" not in columns:
                 connection.exec_driver_sql("ALTER TABLE donor ADD COLUMN email VARCHAR(254)")
+            # Make phone optional on PostgreSQL without touching existing donor rows.
+            # Existing phone values remain unchanged; only the NOT NULL constraint is removed.
+            if db.engine.dialect.name == "postgresql":
+                connection.exec_driver_sql("ALTER TABLE donor ALTER COLUMN phone DROP NOT NULL")
     except Exception:
         app.logger.exception("Database schema check failed")
 
@@ -141,6 +176,26 @@ def valid_saudi_phone(phone):
     return normalize_saudi_phone(phone) is not None
 
 
+@app.route("/donors", methods=["GET"])
+def donor_directory():
+    """Show all donors who consented to be listed, across every blood type and city."""
+    results = Donor.query.filter_by(consent=True).order_by(Donor.created_at.desc()).all()
+    results = [d for d in results if not (UserPreference.query.filter_by(donor_id=d.id).first() and not UserPreference.query.filter_by(donor_id=d.id).first().show_in_directory)]
+    return render_template(
+        "index.html",
+        results=results,
+        selected_type="",
+        selected_city="",
+        searched=True,
+        donor_directory=True,
+        blood_types=BLOOD_TYPES,
+        cities=CITIES,
+        total_donors=Donor.query.count(),
+        current_donor=current_donor(),
+        form={},
+    )
+
+
 @app.route("/explore", methods=["GET", "POST"])
 def explore():
     selected_type = ""
@@ -173,10 +228,12 @@ def explore():
         selected_type=selected_type,
         selected_city=selected_city,
         searched=searched,
+        donor_directory=False,
         blood_types=BLOOD_TYPES,
         cities=CITIES,
         total_donors=total_donors,
         current_donor=current_donor(),
+        form=request.form if request.method == "POST" and request.form.get("full_name") else {},
     )
 
 
@@ -185,7 +242,11 @@ def current_donor():
     donor_id = session.get("active_donor_id")
     if donor_id:
         return db.session.get(Donor, int(donor_id))
-    # Backward compatibility for existing verified-email sessions.
+    account_id = session.get("account_id")
+    if account_id:
+        account = db.session.get(Account, int(account_id))
+        if account and account.donor_id:
+            return db.session.get(Donor, account.donor_id)
     email = session.get("verified_email")
     return Donor.query.filter_by(email=email).first() if email else None
 
@@ -257,6 +318,8 @@ def conversation(conversation_id):
             db.session.commit()
             return redirect(url_for("conversation", conversation_id=convo.id))
     messages = Message.query.filter_by(conversation_id=convo.id).order_by(Message.created_at.asc(), Message.id.asc()).all()
+    if messages:
+        session["last_seen_message_id"] = max(int(session.get("last_seen_message_id", 0)), max(m.id for m in messages))
     whatsapp_link = None
     if other and other.public_phone and other.phone:
         whatsapp_link = "https://wa.me/" + re.sub(r"\D", "", other.phone)
@@ -272,9 +335,47 @@ def index():
 @app.route("/email-login", methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """Login was removed; visitors can register directly as donors."""
-    return redirect(url_for("register"))
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        account = Account.query.filter_by(email=email).first() if email else None
+        if not account or not check_password_hash(account.password_hash, password):
+            flash("البريد الإلكتروني أو كلمة المرور غير صحيحة.", "error")
+            return render_template("auth.html", mode="login")
+        session.clear()
+        session["account_id"] = account.id
+        if account.donor_id:
+            session["active_donor_id"] = account.donor_id
+        session.permanent = True
+        flash("تم تسجيل الدخول بنجاح.", "success")
+        return redirect(url_for("index"))
+    return render_template("auth.html", mode="login")
 
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm_password", "")
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+            flash("أدخل بريدًا إلكترونيًا صحيحًا.", "error")
+        elif len(password) < 8:
+            flash("كلمة المرور يجب أن تكون 8 أحرف على الأقل.", "error")
+        elif password != confirm:
+            flash("كلمتا المرور غير متطابقتين.", "error")
+        elif Account.query.filter_by(email=email).first():
+            flash("هذا البريد مسجل بالفعل. سجّل الدخول بدلًا من ذلك.", "error")
+        else:
+            account = Account(email=email, password_hash=generate_password_hash(password))
+            db.session.add(account)
+            db.session.commit()
+            session.clear()
+            session["account_id"] = account.id
+            session.permanent = True
+            flash("تم إنشاء حسابك. يمكنك الآن تسجيل بياناتك كمتبرع.", "success")
+            return redirect(url_for("register"))
+        return render_template("auth.html", mode="signup")
+    return render_template("auth.html", mode="signup")
 
 @app.route("/verify", methods=["GET", "POST"])
 def verify_otp():
@@ -283,6 +384,7 @@ def verify_otp():
 
 @app.route("/logout")
 def logout():
+    session.pop("account_id", None)
     session.pop("active_donor_id", None)
     session.pop("verified_email", None)
     session.pop("verified_phone", None)
@@ -298,7 +400,8 @@ def register():
             flash("تعذّر إتمام التسجيل. حاول مرة أخرى.", "error")
             return redirect(url_for("register"))
         full_name = request.form.get("full_name", "").strip()
-        phone = normalize_saudi_phone(request.form.get("phone", ""))
+        phone_input = request.form.get("phone", "").strip()
+        phone = normalize_saudi_phone(phone_input) if phone_input else None
         age_raw = request.form.get("age", "").strip()
         blood_type = request.form.get("blood_type", "").strip()
         city = request.form.get("city", "").strip()
@@ -307,9 +410,9 @@ def register():
         errors = []
         if len(full_name) < 2 or len(full_name) > 100:
             errors.append("اكتب الاسم بشكل صحيح.")
-        if not phone:
-            errors.append("أدخل رقم جوال سعودي صحيحًا للتواصل بشأن التبرع.")
-        elif Donor.query.filter_by(phone=phone).first():
+        if phone_input and not phone:
+            errors.append("إذا رغبت بإضافة رقم الجوال، أدخل رقمًا سعوديًا صحيحًا.")
+        elif phone and Donor.query.filter_by(phone=phone).first():
             errors.append("رقم الجوال مسجل بالفعل. إذا كانت هذه بياناتك، تواصل مع مسؤول المنصة لتحديثها.")
         try:
             age = int(age_raw)
@@ -327,30 +430,158 @@ def register():
         if errors:
             for error in errors:
                 flash(error, "error")
-            return render_template("register.html", blood_types=BLOOD_TYPES, cities=CITIES, form=request.form, verified_email=None)
+            return render_template("register.html", blood_types=BLOOD_TYPES, cities=CITIES, form=request.form)
 
         donor = Donor(full_name=full_name, email=None, phone=phone, age=age,
                       blood_type=blood_type, city=city, consent=True, public_phone=public_phone)
         db.session.add(donor)
+        db.session.flush()
+        account_id = session.get("account_id")
+        account = db.session.get(Account, int(account_id)) if account_id else None
+        if account and account.donor_id is None:
+            account.donor_id = donor.id
         try:
             db.session.commit()
         except Exception:
             db.session.rollback()
             app.logger.exception("Could not save donor registration")
             flash("حدث خطأ أثناء حفظ التسجيل. حاول مرة أخرى لاحقًا.", "error")
-            return render_template("register.html", blood_types=BLOOD_TYPES, cities=CITIES, form=request.form, verified_email=None)
+            return render_template("register.html", blood_types=BLOOD_TYPES, cities=CITIES, form=request.form)
 
         # Bind private messages to this browser session, without requiring login.
         target_id = session.pop("message_after_register", None) or request.args.get("message_to", type=int)
-        session.clear()
         session["active_donor_id"] = donor.id
+        if account:
+            session["account_id"] = account.id
         session.permanent = True
         flash("تم حفظ بياناتك بنجاح. تقدر الآن تبحث عن متبرعين وتستخدم الرسائل الخاصة.", "success")
         if target_id:
             return redirect(url_for("start_message", donor_id=target_id))
         return redirect(url_for("explore"))
-    return render_template("register.html", blood_types=BLOOD_TYPES, cities=CITIES, form={}, verified_email=None)
+    return render_template("register.html", blood_types=BLOOD_TYPES, cities=CITIES, form={})
 
+
+@app.route("/api/notifications")
+def notifications_api():
+    donor = current_donor()
+    if not donor:
+        return {"count": 0, "latest": []}
+    prefs = UserPreference.query.filter_by(donor_id=donor.id).first()
+    if prefs and not prefs.in_site_notifications:
+        return {"count": 0, "latest": []}
+    conversations = Conversation.query.filter(db.or_(Conversation.donor_a_id == donor.id, Conversation.donor_b_id == donor.id)).all()
+    conversation_ids = [c.id for c in conversations]
+    if not conversation_ids:
+        return {"count": 0, "latest": []}
+    if "last_seen_message_id" not in session:
+        latest_id = db.session.query(func.max(Message.id)).filter(Message.conversation_id.in_(conversation_ids)).scalar() or 0
+        session["last_seen_message_id"] = int(latest_id)
+        return {"count": 0, "latest": []}
+    last_seen = int(session.get("last_seen_message_id", 0))
+    incoming = Message.query.filter(Message.conversation_id.in_(conversation_ids), Message.sender_id != donor.id, Message.id > last_seen).order_by(Message.id.asc()).limit(10).all()
+    if incoming:
+        session["last_seen_message_id"] = max(m.id for m in incoming)
+    return {"count": len(incoming), "latest": [{"id": m.id, "body": m.body[:120], "url": url_for("conversation", conversation_id=m.conversation_id)} for m in incoming]}
+
+@app.route("/notifications/seen", methods=["POST"])
+def notifications_seen():
+    message_id = request.form.get("message_id", type=int) or 0
+    session["last_seen_message_id"] = max(message_id, int(session.get("last_seen_message_id", 0)))
+    return {"ok": True}
+
+
+@app.route("/settings", methods=["GET", "POST"])
+def settings():
+    donor = current_donor()
+    if not donor:
+        flash("سجّل الدخول أو أضف بياناتك كمتبرع للوصول إلى الإعدادات.", "error")
+        return redirect(url_for("login"))
+    prefs = UserPreference.query.filter_by(donor_id=donor.id).first()
+    if not prefs:
+        prefs = UserPreference(donor_id=donor.id)
+        db.session.add(prefs)
+        db.session.commit()
+    if request.method == "POST":
+        prefs.in_site_notifications = request.form.get("in_site_notifications") == "yes"
+        prefs.browser_notifications = request.form.get("browser_notifications") == "yes"
+        prefs.email_notifications = request.form.get("email_notifications") == "yes"
+        prefs.show_in_directory = request.form.get("show_in_directory") == "yes"
+        db.session.commit()
+        flash("تم حفظ إعداداتك.", "success")
+        return redirect(url_for("settings"))
+    return render_template("settings.html", donor=donor, prefs=prefs)
+
+
+@app.route("/profile", methods=["GET", "POST"])
+def profile():
+    donor = current_donor()
+    if not donor:
+        flash("سجّل الدخول أولًا للوصول إلى ملفك الشخصي.", "error")
+        return redirect(url_for("login"))
+    if request.method == "POST":
+        name = request.form.get("full_name", "").strip()
+        age_raw = request.form.get("age", "").strip()
+        blood = request.form.get("blood_type", "").strip()
+        city = request.form.get("city", "").strip()
+        phone_input = request.form.get("phone", "").strip()
+        public_phone = request.form.get("public_phone") == "yes"
+        try:
+            age = int(age_raw)
+        except ValueError:
+            age = 0
+        phone = normalize_saudi_phone(phone_input) if phone_input else None
+        duplicate = Donor.query.filter(Donor.phone == phone, Donor.id != donor.id).first() if phone else None
+        if not (2 <= len(name) <= 100) or not (18 <= age <= 100) or blood not in BLOOD_TYPES or city not in CITIES:
+            flash("راجع الاسم والعمر والفصيلة والمدينة.", "error")
+        elif phone_input and not phone:
+            flash("رقم الجوال غير صحيح.", "error")
+        elif duplicate:
+            flash("رقم الجوال مستخدم في حساب آخر.", "error")
+        else:
+            donor.full_name, donor.age, donor.blood_type, donor.city = name, age, blood, city
+            donor.phone = phone
+            donor.public_phone = bool(phone and public_phone)
+            db.session.commit()
+            flash("تم تحديث ملفك الشخصي.", "success")
+            return redirect(url_for("profile"))
+    return render_template("profile.html", donor=donor, blood_types=BLOOD_TYPES, cities=CITIES)
+
+
+@app.route("/requests", methods=["GET", "POST"])
+def donation_requests():
+    donor = current_donor()
+    if request.method == "POST":
+        if not donor:
+            flash("سجّل الدخول أو أضف بياناتك كمتبرع لنشر طلب.", "error")
+            return redirect(url_for("login"))
+        blood = request.form.get("blood_type", "").strip()
+        city = request.form.get("city", "").strip()
+        hospital = request.form.get("hospital", "").strip()[:160]
+        urgency = request.form.get("urgency", "عادي")
+        details = request.form.get("details", "").strip()[:1000]
+        if blood not in BLOOD_TYPES or city not in CITIES or len(hospital) < 2 or urgency not in ("عادي", "عاجل"):
+            flash("أكمل الفصيلة والمدينة واسم المستشفى بشكل صحيح.", "error")
+        else:
+            item = DonationRequest(donor_id=donor.id, blood_type=blood, city=city, hospital=hospital, urgency=urgency, details=details)
+            db.session.add(item)
+            db.session.commit()
+            flash("تم نشر الطلب. يرجى تأكيد الاحتياج مع المستشفى مباشرة.", "success")
+            return redirect(url_for("donation_requests"))
+    items = DonationRequest.query.filter_by(status="مفتوح").order_by(DonationRequest.created_at.desc()).limit(100).all()
+    return render_template("requests.html", donor=donor, items=items, blood_types=BLOOD_TYPES, cities=CITIES)
+
+
+@app.route("/requests/<int:request_id>/close", methods=["POST"])
+def close_donation_request(request_id):
+    donor = current_donor()
+    item = db.session.get(DonationRequest, request_id)
+    if not donor or not item or item.donor_id != donor.id:
+        flash("لا تملك صلاحية إغلاق هذا الطلب.", "error")
+    else:
+        item.status = "مغلق"
+        db.session.commit()
+        flash("تم إغلاق الطلب.", "success")
+    return redirect(url_for("donation_requests"))
 
 @app.route("/privacy")
 def privacy():
@@ -393,7 +624,7 @@ table{width:100%;border-collapse:collapse;margin-top:18px}th,td{padding:10px;bor
 </form>
 <table><thead><tr><th>الاسم</th><th>الجوال</th><th>الفصيلة</th><th>المدينة</th><th>العمر</th><th>الإجراء</th></tr></thead><tbody>
 {% for donor in donors %}
-<tr><td>{{ donor.full_name }}</td><td>{{ donor.phone }}</td><td>{{ donor.blood_type }}</td><td>{{ donor.city }}</td><td>{{ donor.age }}</td><td>
+<tr><td>{{ donor.full_name }}</td><td>{{ donor.phone or "—" }}</td><td>{{ donor.blood_type }}</td><td>{{ donor.city }}</td><td>{{ donor.age }}</td><td>
 <form method="post" action="{{ url_for('admin_panel') }}" onsubmit="return confirm('تأكيد حذف بيانات المتبرع {{ donor.full_name }}؟');">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <input type="hidden" name="donor_id" value="{{ donor.id }}">
