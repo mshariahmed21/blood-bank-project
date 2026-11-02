@@ -924,3 +924,8 @@ a.header-stat:focus-visible{outline:3px solid rgba(185,31,59,.35);outline-offset
 .qatrah-install-button:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(130,15,43,.36)}
 .qatrah-install-button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media(max-width:600px){.qatrah-install-button{left:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:10px 14px;font-size:13px}}
+
+
+/* Project supervisor credit */
+.supervisor-credit{margin:10px 0 0;font-weight:800;color:var(--red);font-size:.95rem}
+[data-theme="dark"] .supervisor-credit{color:#f08aa0}

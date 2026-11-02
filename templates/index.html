@@ -1,43 +1,43 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#b91f3b">
-<meta name="description" content="قطرة حياة: منصة للتواصل مع المتبرعين بالدم حسب الفصيلة والمدينة.">
-<title>قطرة حياة | قطرة منك، حياة لغيرك</title>
+<meta name="description" content="ظ‚ط·ط±ط© ط­ظٹط§ط©: ظ…ظ†طµط© ظ„ظ„طھظˆط§طµظ„ ظ…ط¹ ط§ظ„ظ…طھط¨ط±ط¹ظٹظ† ط¨ط§ظ„ط¯ظ… ط­ط³ط¨ ط§ظ„ظپطµظٹظ„ط© ظˆط§ظ„ظ…ط¯ظٹظ†ط©.">
+<title>ظ‚ط·ط±ط© ط­ظٹط§ط© | ظ‚ط·ط±ط© ظ…ظ†ظƒطŒ ط­ظٹط§ط© ظ„ط؛ظٹط±ظƒ</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#b91f3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="/static/icons/icon-192.png"></head>
 <body>
 <div class="page-glow" aria-hidden="true"></div>
 <header class="topbar site-header">
-  <a class="brand brand-link" href="{{ url_for('index') }}" aria-label="قطرة حياة - الرئيسية">
-    <span class="brand-mark">♥</span><span><strong>قطرة حياة</strong><small>العطاء حياة</small></span>
+  <a class="brand brand-link" href="{{ url_for('index') }}" aria-label="ظ‚ط·ط±ط© ط­ظٹط§ط© - ط§ظ„ط±ط¦ظٹط³ظٹط©">
+    <span class="brand-mark">â™¥</span><span><strong>ظ‚ط·ط±ط© ط­ظٹط§ط©</strong><small>ط§ظ„ط¹ط·ط§ط، ط­ظٹط§ط©</small></span>
   </a>
   <div class="header-side">
-    <a class="header-stat" href="{{ url_for('donor_directory') }}" aria-label="عرض جميع المتبرعين المسجلين"><strong>{{ total_donors }}</strong><span>متبرع مسجّل</span></a>
-    <button class="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" aria-controls="side-drawer" data-menu-toggle><span></span><span></span><span></span></button>
+    <a class="header-stat" href="{{ url_for('donor_directory') }}" aria-label="ط¹ط±ط¶ ط¬ظ…ظٹط¹ ط§ظ„ظ…طھط¨ط±ط¹ظٹظ† ط§ظ„ظ…ط³ط¬ظ„ظٹظ†"><strong>{{ total_donors }}</strong><span>ظ…طھط¨ط±ط¹ ظ…ط³ط¬ظ‘ظ„</span></a>
+    <button class="menu-toggle" type="button" aria-label="ظپطھط­ ط§ظ„ظ‚ط§ط¦ظ…ط©" aria-expanded="false" aria-controls="side-drawer" data-menu-toggle><span></span><span></span><span></span></button>
   </div>
 </header>
 <div class="drawer-scrim" data-drawer-close></div>
-<aside class="side-drawer" id="side-drawer" aria-label="القائمة الجانبية" aria-hidden="true">
-  <div class="drawer-head"><div class="drawer-brand"><span class="brand-mark">♥</span><strong>قطرة حياة</strong></div><button type="button" class="drawer-close" aria-label="إغلاق القائمة" data-drawer-close>×</button></div>
-  <p class="drawer-caption">كل قطرة تصنع فرقًا</p>
+<aside class="side-drawer" id="side-drawer" aria-label="ط§ظ„ظ‚ط§ط¦ظ…ط© ط§ظ„ط¬ط§ظ†ط¨ظٹط©" aria-hidden="true">
+  <div class="drawer-head"><div class="drawer-brand"><span class="brand-mark">â™¥</span><strong>ظ‚ط·ط±ط© ط­ظٹط§ط©</strong></div><button type="button" class="drawer-close" aria-label="ط¥ط؛ظ„ط§ظ‚ ط§ظ„ظ‚ط§ط¦ظ…ط©" data-drawer-close>أ—</button></div>
+  <p class="drawer-caption">ظƒظ„ ظ‚ط·ط±ط© طھطµظ†ط¹ ظپط±ظ‚ظ‹ط§</p>
   <nav class="drawer-nav">
-    <a href="#home" data-drawer-link><span>⌂</span> الرئيسية</a>
-    <a href="#search" data-drawer-link><span>⌕</span> البحث عن متبرع</a>
-    <a href="{{ url_for('register') }}" data-drawer-link><span>＋</span> التسجيل كمتبرع</a>
-    <a href="{{ url_for('login') }}"><span>↪</span> تسجيل الدخول</a>
-    <a href="{{ url_for('signup') }}"><span>＋</span> إنشاء حساب جديد</a>
-    <a href="{{ url_for('inbox') }}"><span>✉</span> رسائلي الخاصة</a>
-    <a href="{{ url_for('donation_requests') }}"><span>＋</span> طلبات التبرع</a>
-    <a href="{{ url_for('profile') }}"><span>◎</span> ملفي الشخصي</a>
-    <a href="{{ url_for('settings') }}"><span>⚙</span> الإعدادات</a>
-    <a href="{{ url_for('privacy') }}"><span>盾</span> سياسة الخصوصية</a>
+    <a href="#home" data-drawer-link><span>âŒ‚</span> ط§ظ„ط±ط¦ظٹط³ظٹط©</a>
+    <a href="#search" data-drawer-link><span>âŒ•</span> ط§ظ„ط¨ط­ط« ط¹ظ† ظ…طھط¨ط±ط¹</a>
+    <a href="{{ url_for('register') }}" data-drawer-link><span>ï¼‹</span> ط§ظ„طھط³ط¬ظٹظ„ ظƒظ…طھط¨ط±ط¹</a>
+    <a href="{{ url_for('login') }}"><span>â†ھ</span> طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„</a>
+    <a href="{{ url_for('signup') }}"><span>ï¼‹</span> ط¥ظ†ط´ط§ط، ط­ط³ط§ط¨ ط¬ط¯ظٹط¯</a>
+    <a href="{{ url_for('inbox') }}"><span>âœ‰</span> ط±ط³ط§ط¦ظ„ظٹ ط§ظ„ط®ط§طµط©</a>
+    <a href="{{ url_for('donation_requests') }}"><span>ï¼‹</span> ط·ظ„ط¨ط§طھ ط§ظ„طھط¨ط±ط¹</a>
+    <a href="{{ url_for('profile') }}"><span>â—ژ</span> ظ…ظ„ظپظٹ ط§ظ„ط´ط®طµظٹ</a>
+    <a href="{{ url_for('settings') }}"><span>âڑ™</span> ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ</a>
+    <a href="{{ url_for('privacy') }}"><span>ç›¾</span> ط³ظٹط§ط³ط© ط§ظ„ط®طµظˆطµظٹط©</a>
   </nav>
-  <div class="drawer-bottom"><span class="theme-dot">◐</span><span>الوضع الداكن</span><button class="theme-toggle" type="button" data-theme-toggle>🌙 تفعيل</button></div>
-  <small class="drawer-footnote">تُستكمل إجراءات التبرع عبر جهة صحية معتمدة.</small>
+  <div class="drawer-bottom"><span class="theme-dot">â—گ</span><span>ط§ظ„ظˆط¶ط¹ ط§ظ„ط¯ط§ظƒظ†</span><button class="theme-toggle" type="button" data-theme-toggle>ًںŒ™ طھظپط¹ظٹظ„</button></div>
+  <small class="drawer-footnote">طھظڈط³طھظƒظ…ظ„ ط¥ط¬ط±ط§ط،ط§طھ ط§ظ„طھط¨ط±ط¹ ط¹ط¨ط± ط¬ظ‡ط© طµط­ظٹط© ظ…ط¹طھظ…ط¯ط©.</small>
 </aside>
 
 <main class="container main-content">
@@ -46,45 +46,45 @@
   {% endwith %}
   <section class="hero" id="home">
     <div class="hero-text">
-      <span class="eyebrow"><span class="pulse-dot"></span> معًا نصنع فرقًا</span>
-      <h1>قطرة منك،<br><span>حياة لغيرك.</span></h1>
-      <p>منصة تجمع الراغبين في التبرع بالدم، وتسهّل البحث حسب فصيلة الدم والمدينة بطريقة واضحة وتحترم الخصوصية.</p>
-      <div class="hero-actions"><a href="#search" class="primary-link">ابحث عن متبرع <span>←</span></a><a href="{{ url_for('register') }}" class="secondary-link">＋ سجّل كمتبرع</a></div>
-      <div class="trust-note"><span>✓</span> رقمك يظهر عند موافقتك</div>
+      <span class="eyebrow"><span class="pulse-dot"></span> ظ…ط¹ظ‹ط§ ظ†طµظ†ط¹ ظپط±ظ‚ظ‹ط§</span>
+      <h1>ظ‚ط·ط±ط© ظ…ظ†ظƒطŒ<br><span>ط­ظٹط§ط© ظ„ط؛ظٹط±ظƒ.</span></h1>
+      <p>ظ…ظ†طµط© طھط¬ظ…ط¹ ط§ظ„ط±ط§ط؛ط¨ظٹظ† ظپظٹ ط§ظ„طھط¨ط±ط¹ ط¨ط§ظ„ط¯ظ…طŒ ظˆطھط³ظ‡ظ‘ظ„ ط§ظ„ط¨ط­ط« ط­ط³ط¨ ظپطµظٹظ„ط© ط§ظ„ط¯ظ… ظˆط§ظ„ظ…ط¯ظٹظ†ط© ط¨ط·ط±ظٹظ‚ط© ظˆط§ط¶ط­ط© ظˆطھط­طھط±ظ… ط§ظ„ط®طµظˆطµظٹط©.</p>
+      <div class="hero-actions"><a href="#search" class="primary-link">ط§ط¨ط­ط« ط¹ظ† ظ…طھط¨ط±ط¹ <span>â†گ</span></a><a href="{{ url_for('register') }}" class="secondary-link">ï¼‹ ط³ط¬ظ‘ظ„ ظƒظ…طھط¨ط±ط¹</a></div>
+      <div class="trust-note"><span>âœ“</span> ط±ظ‚ظ…ظƒ ظٹط¸ظ‡ط± ط¹ظ†ط¯ ظ…ظˆط§ظپظ‚طھظƒ</div>
     </div>
     <div class="hero-art">
       <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-      <div class="drop"><span>♥</span></div>
-      <a class="floating-card" href="{{ url_for('donor_directory') }}" aria-label="عرض جميع المتبرعين المسجلين"><span class="floating-icon">＋</span><span><strong>جميع المتبرعين</strong><small>تصفّح كل الفصائل والمدن</small></span><span class="floating-arrow">←</span></a>
-      <div class="tiny-card">🩸 <strong>كل قطرة تفرق</strong></div>
+      <div class="drop"><span>â™¥</span></div>
+      <a class="floating-card" href="{{ url_for('donor_directory') }}" aria-label="ط¹ط±ط¶ ط¬ظ…ظٹط¹ ط§ظ„ظ…طھط¨ط±ط¹ظٹظ† ط§ظ„ظ…ط³ط¬ظ„ظٹظ†"><span class="floating-icon">ï¼‹</span><span><strong>ط¬ظ…ظٹط¹ ط§ظ„ظ…طھط¨ط±ط¹ظٹظ†</strong><small>طھطµظپظ‘ط­ ظƒظ„ ط§ظ„ظپطµط§ط¦ظ„ ظˆط§ظ„ظ…ط¯ظ†</small></span><span class="floating-arrow">â†گ</span></a>
+      <div class="tiny-card">ًں©¸ <strong>ظƒظ„ ظ‚ط·ط±ط© طھظپط±ظ‚</strong></div>
     </div>
   </section>
 
-  <section class="stats" aria-label="إحصائيات المنصة">
-    <a class="stat-card stat-link" href="{{ url_for('donor_directory') }}"><span class="stat-icon">♥</span><div><strong>{{ total_donors }}</strong><small>متبرع مسجّل</small></div></a>
-    <article class="stat-card"><span class="stat-icon">✚</span><div><strong>8</strong><small>فصائل دم</small></div></article>
-    <article class="stat-card"><span class="stat-icon">⌖</span><div><strong>{{ cities|length }}</strong><small>مدينة ضمن القائمة</small></div></article>
+  <section class="stats" aria-label="ط¥ط­طµط§ط¦ظٹط§طھ ط§ظ„ظ…ظ†طµط©">
+    <a class="stat-card stat-link" href="{{ url_for('donor_directory') }}"><span class="stat-icon">â™¥</span><div><strong>{{ total_donors }}</strong><small>ظ…طھط¨ط±ط¹ ظ…ط³ط¬ظ‘ظ„</small></div></a>
+    <article class="stat-card"><span class="stat-icon">âœڑ</span><div><strong>8</strong><small>ظپطµط§ط¦ظ„ ط¯ظ…</small></div></article>
+    <article class="stat-card"><span class="stat-icon">âŒ–</span><div><strong>{{ cities|length }}</strong><small>ظ…ط¯ظٹظ†ط© ط¶ظ…ظ† ط§ظ„ظ‚ط§ط¦ظ…ط©</small></div></article>
   </section>
 
   <section class="content-panel search-section" id="search">
-    <div class="section-heading"><span class="eyebrow">{% if donor_directory|default(false) %}دليل المتبرعين{% else %}البحث الذكي{% endif %}</span><h2>{% if donor_directory|default(false) %}جميع المتبرعين المسجلين{% else %}ابحث عن متبرع مناسب{% endif %}</h2><p>{% if donor_directory|default(false) %}تظهر هنا جميع الفصائل والمدن للمتبرعين الذين وافقوا على إدراج بياناتهم.{% else %}حدّد فصيلة الدم والمدينة لعرض النتائج المطابقة، أو افتح دليل جميع المتبرعين من بطاقة الزائد بجانب القطرة.{% endif %}</p></div>
+    <div class="section-heading"><span class="eyebrow">{% if donor_directory|default(false) %}ط¯ظ„ظٹظ„ ط§ظ„ظ…طھط¨ط±ط¹ظٹظ†{% else %}ط§ظ„ط¨ط­ط« ط§ظ„ط°ظƒظٹ{% endif %}</span><h2>{% if donor_directory|default(false) %}ط¬ظ…ظٹط¹ ط§ظ„ظ…طھط¨ط±ط¹ظٹظ† ط§ظ„ظ…ط³ط¬ظ„ظٹظ†{% else %}ط§ط¨ط­ط« ط¹ظ† ظ…طھط¨ط±ط¹ ظ…ظ†ط§ط³ط¨{% endif %}</h2><p>{% if donor_directory|default(false) %}طھط¸ظ‡ط± ظ‡ظ†ط§ ط¬ظ…ظٹط¹ ط§ظ„ظپطµط§ط¦ظ„ ظˆط§ظ„ظ…ط¯ظ† ظ„ظ„ظ…طھط¨ط±ط¹ظٹظ† ط§ظ„ط°ظٹظ† ظˆط§ظپظ‚ظˆط§ ط¹ظ„ظ‰ ط¥ط¯ط±ط§ط¬ ط¨ظٹط§ظ†ط§طھظ‡ظ….{% else %}ط­ط¯ظ‘ط¯ ظپطµظٹظ„ط© ط§ظ„ط¯ظ… ظˆط§ظ„ظ…ط¯ظٹظ†ط© ظ„ط¹ط±ط¶ ط§ظ„ظ†طھط§ط¦ط¬ ط§ظ„ظ…ط·ط§ط¨ظ‚ط©طŒ ط£ظˆ ط§ظپطھط­ ط¯ظ„ظٹظ„ ط¬ظ…ظٹط¹ ط§ظ„ظ…طھط¨ط±ط¹ظٹظ† ظ…ظ† ط¨ط·ط§ظ‚ط© ط§ظ„ط²ط§ط¦ط¯ ط¨ط¬ط§ظ†ط¨ ط§ظ„ظ‚ط·ط±ط©.{% endif %}</p></div>
     <form method="POST" action="{{ url_for('explore') }}#search" class="search-form">
-      <div class="field"><label for="search_blood_type">فصيلة الدم</label><select name="blood_type" id="search_blood_type"><option value="">كل الفصائل</option>{% for bt in blood_types %}<option value="{{ bt }}" {% if selected_type == bt %}selected{% endif %}>{{ bt }}</option>{% endfor %}</select></div>
-      <div class="field"><label for="search_city">المدينة</label><select name="city" id="search_city"><option value="">كل المدن</option>{% for c in cities %}<option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
-      <button type="submit" class="search-button">⌕ <span>بحث عن متبرعين</span></button>
+      <div class="field"><label for="search_blood_type">ظپطµظٹظ„ط© ط§ظ„ط¯ظ…</label><select name="blood_type" id="search_blood_type"><option value="">ظƒظ„ ط§ظ„ظپطµط§ط¦ظ„</option>{% for bt in blood_types %}<option value="{{ bt }}" {% if selected_type == bt %}selected{% endif %}>{{ bt }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="search_city">ط§ظ„ظ…ط¯ظٹظ†ط©</label><select name="city" id="search_city"><option value="">ظƒظ„ ط§ظ„ظ…ط¯ظ†</option>{% for c in cities %}<option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+      <button type="submit" class="search-button">âŒ• <span>ط¨ط­ط« ط¹ظ† ظ…طھط¨ط±ط¹ظٹظ†</span></button>
     </form>
     {% if searched %}
-    <div class="results"><h3>{% if donor_directory|default(false) %}قائمة المتبرعين{% else %}نتائج البحث{% endif %} <span class="result-count">{{ results|length }}</span></h3>
+    <div class="results"><h3>{% if donor_directory|default(false) %}ظ‚ط§ط¦ظ…ط© ط§ظ„ظ…طھط¨ط±ط¹ظٹظ†{% else %}ظ†طھط§ط¦ط¬ ط§ظ„ط¨ط­ط«{% endif %} <span class="result-count">{{ results|length }}</span></h3>
       {% if results %}<div class="donor-grid">{% for donor in results %}
-      <article class="donor-card"><div class="donor-avatar">♥</div><div class="donor-info"><h4>{{ donor.full_name.split()[0] }} {{ donor.full_name.split()[-1][0] }}.</h4><p>⌖ {{ donor.city }}</p></div><span class="blood-badge">{{ donor.blood_type }}</span><p class="demo-note">متبرع مسجّل</p><div class="donor-actions"><a class="search-button donor-action" href="{{ url_for('start_message', donor_id=donor.id) }}">محادثة خاصة</a>{% if donor.public_phone %}<a class="secondary-link donor-action" href="https://wa.me/{{ donor.phone }}" target="_blank" rel="noopener noreferrer">واتساب</a>{% endif %}</div></article>
-      {% endfor %}</div><p class="demo-warning">يجب التحقق من أهلية التبرع وتنسيق التبرع عبر جهة صحية معتمدة.</p>
-      {% else %}<p class="empty-state">لا توجد نتائج مطابقة حاليًا. جرّب تغيير الفصيلة أو المدينة.</p>{% endif %}
+      <article class="donor-card"><div class="donor-avatar">â™¥</div><div class="donor-info"><h4>{{ donor.full_name.split()[0] }} {{ donor.full_name.split()[-1][0] }}.</h4><p>âŒ– {{ donor.city }}</p></div><span class="blood-badge">{{ donor.blood_type }}</span><p class="demo-note">ظ…طھط¨ط±ط¹ ظ…ط³ط¬ظ‘ظ„</p><div class="donor-actions"><a class="search-button donor-action" href="{{ url_for('start_message', donor_id=donor.id) }}">ظ…ط­ط§ط¯ط«ط© ط®ط§طµط©</a>{% if donor.public_phone %}<a class="secondary-link donor-action" href="https://wa.me/{{ donor.phone }}" target="_blank" rel="noopener noreferrer">ظˆط§طھط³ط§ط¨</a>{% endif %}</div></article>
+      {% endfor %}</div><p class="demo-warning">ظٹط¬ط¨ ط§ظ„طھط­ظ‚ظ‚ ظ…ظ† ط£ظ‡ظ„ظٹط© ط§ظ„طھط¨ط±ط¹ ظˆطھظ†ط³ظٹظ‚ ط§ظ„طھط¨ط±ط¹ ط¹ط¨ط± ط¬ظ‡ط© طµط­ظٹط© ظ…ط¹طھظ…ط¯ط©.</p>
+      {% else %}<p class="empty-state">ظ„ط§ طھظˆط¬ط¯ ظ†طھط§ط¦ط¬ ظ…ط·ط§ط¨ظ‚ط© ط­ط§ظ„ظٹظ‹ط§. ط¬ط±ظ‘ط¨ طھط؛ظٹظٹط± ط§ظ„ظپطµظٹظ„ط© ط£ظˆ ط§ظ„ظ…ط¯ظٹظ†ط©.</p>{% endif %}
     </div>{% endif %}
   </section>
 
-  <section class="steps"><div class="section-heading"><span class="eyebrow">بكل بساطة</span><h2>كيف تعمل قطرة حياة؟</h2></div><div class="step-grid"><article class="step"><span>01</span><h3>سجّل بياناتك</h3><p>أدخل معلوماتك الأساسية ووافق على سياسة الخصوصية.</p></article><article class="step"><span>02</span><h3>ابحث بسهولة</h3><p>اختر فصيلة الدم والمدينة للوصول إلى النتائج المناسبة.</p></article><article class="step"><span>03</span><h3>نسّق بأمان</h3><p>تحقق من الاحتياج وأهلية التبرع مع جهة صحية معتمدة.</p></article></div></section>
+  <section class="steps"><div class="section-heading"><span class="eyebrow">ط¨ظƒظ„ ط¨ط³ط§ط·ط©</span><h2>ظƒظٹظپ طھط¹ظ…ظ„ ظ‚ط·ط±ط© ط­ظٹط§ط©طں</h2></div><div class="step-grid"><article class="step"><span>01</span><h3>ط³ط¬ظ‘ظ„ ط¨ظٹط§ظ†ط§طھظƒ</h3><p>ط£ط¯ط®ظ„ ظ…ط¹ظ„ظˆظ…ط§طھظƒ ط§ظ„ط£ط³ط§ط³ظٹط© ظˆظˆط§ظپظ‚ ط¹ظ„ظ‰ ط³ظٹط§ط³ط© ط§ظ„ط®طµظˆطµظٹط©.</p></article><article class="step"><span>02</span><h3>ط§ط¨ط­ط« ط¨ط³ظ‡ظˆظ„ط©</h3><p>ط§ط®طھط± ظپطµظٹظ„ط© ط§ظ„ط¯ظ… ظˆط§ظ„ظ…ط¯ظٹظ†ط© ظ„ظ„ظˆطµظˆظ„ ط¥ظ„ظ‰ ط§ظ„ظ†طھط§ط¦ط¬ ط§ظ„ظ…ظ†ط§ط³ط¨ط©.</p></article><article class="step"><span>03</span><h3>ظ†ط³ظ‘ظ‚ ط¨ط£ظ…ط§ظ†</h3><p>طھط­ظ‚ظ‚ ظ…ظ† ط§ظ„ط§ط­طھظٹط§ط¬ ظˆط£ظ‡ظ„ظٹط© ط§ظ„طھط¨ط±ط¹ ظ…ط¹ ط¬ظ‡ط© طµط­ظٹط© ظ…ط¹طھظ…ط¯ط©.</p></article></div></section>
 </main>
-<footer><div class="footer-brand"><span class="brand-mark">♥</span> قطرة حياة</div><p class="quote">«قطرة دم واحدة قد تنقذ حياة.. عطاؤك أمل للآخرين»</p><div class="author-block"><p class="author-title">إعداد المتدربين</p><ul class="trainee-list"><li>مشاري مخرش</li><li>عبدالعزيز قماش</li><li>محمد رفاعي</li><li>علي النجعي</li></ul><p class="author-school">الكلية التقنية بجازان</p></div><p><a href="{{ url_for('privacy') }}">سياسة الخصوصية</a></p><small>تُستكمل إجراءات التبرع عبر جهة صحية معتمدة.</small></footer>
+<footer><div class="footer-brand"><span class="brand-mark">â™¥</span> ظ‚ط·ط±ط© ط­ظٹط§ط©</div><p class="quote">آ«ظ‚ط·ط±ط© ط¯ظ… ظˆط§ط­ط¯ط© ظ‚ط¯ طھظ†ظ‚ط° ط­ظٹط§ط©.. ط¹ط·ط§ط¤ظƒ ط£ظ…ظ„ ظ„ظ„ط¢ط®ط±ظٹظ†آ»</p><div class="author-block"><p class="author-title">ط¥ط¹ط¯ط§ط¯ ط§ظ„ظ…طھط¯ط±ط¨ظٹظ†</p><ul class="trainee-list"><li>ظ…ط´ط§ط±ظٹ ظ…ط®ط±ط´</li><li>ط¹ط¨ط¯ط§ظ„ط¹ط²ظٹط² ظ‚ظ…ط§ط´</li><li>ظ…ط­ظ…ط¯ ط±ظپط§ط¹ظٹ</li><li>ط¹ظ„ظٹ ط§ظ„ظ†ط¬ط¹ظٹ</li></ul><p class="author-school">ط§ظ„ظƒظ„ظٹط© ط§ظ„طھظ‚ظ†ظٹط© ط¨ط¬ط§ط²ط§ظ†</p><p class="supervisor-credit">ط¨ط¥ط´ط±ط§ظپ ط§ظ„ظ…ظ‡ظ†ط¯ط³ ط£ظƒط±ظ… ط¹ظ‚ظٹظ„</p></div><p><a href="{{ url_for('privacy') }}">ط³ظٹط§ط³ط© ط§ظ„ط®طµظˆطµظٹط©</a></p><small>طھظڈط³طھظƒظ…ظ„ ط¥ط¬ط±ط§ط،ط§طھ ط§ظ„طھط¨ط±ط¹ ط¹ط¨ط± ط¬ظ‡ط© طµط­ظٹط© ظ…ط¹طھظ…ط¯ط©.</small></footer>
 <script src="{{ url_for('static', filename='theme.js') }}"></script><script src="{{ url_for('static', filename='menu.js') }}"></script>
 {% if searched %}<script>document.addEventListener('DOMContentLoaded',()=>document.getElementById('search')?.scrollIntoView({behavior:'smooth',block:'start'}));</script>{% endif %}
 <script src="{{ url_for('static', filename='notifications.js') }}"></script><script src="{{ url_for('static', filename='pwa.js') }}" defer></script></body></html>
